@@ -13,11 +13,10 @@ from streamlit_bokeh_events import streamlit_bokeh_events
 # ----------------- CONFIGURACIÓN DE PÁGINA -----------------
 st.set_page_config(
     page_title="Traductor de Voz",
-    page_icon=":globe_with_meridians:",
     layout="wide"
 )
 
-# ----------------- ENCABEZADO -----------------
+# ----------------- ESTILOS -----------------
 st.markdown(
     """
     <style>
@@ -36,7 +35,7 @@ st.markdown("<p class='subtitle'>Habla, traduce y escucha el resultado en segund
 col1, col2, col3 = st.columns([1,2,1])
 with col2:
     image = Image.open("OIG7.jpg")
-    st.image(image, use_column_width=True)
+    st.image(image, use_container_width=True)
 
 
 # ----------------- SIDEBAR -----------------
@@ -47,7 +46,7 @@ with st.sidebar:
         1. Presiona **Escuchar** y dicta el texto.  
         2. Elige idioma de entrada y salida.  
         3. Ajusta el acento si lo deseas.  
-        4. Convierte el texto y escucha el resultado.  
+        4. Genera el audio con el texto traducido.  
         """
     )
 
@@ -91,6 +90,10 @@ result = streamlit_bokeh_events(
 if result and "GET_TEXT" in result:
     text = str(result.get("GET_TEXT"))
     
+    # Mostrar el texto capturado ANTES de traducir
+    st.markdown("### Texto capturado")
+    st.info(text)
+
     st.markdown("### Paso 2: Selecciona opciones de traducción")
     st.write("Configura idioma de entrada, salida y el acento de la voz.")
 
@@ -153,17 +156,14 @@ if result and "GET_TEXT" in result:
 
     st.markdown("### Paso 3: Generar resultado")
 
-    display_output_text = st.checkbox("Mostrar texto traducido")
-
     if st.button("Convertir texto a audio"):
         file_name, output_text = text_to_speech(input_language, output_language, text, tld)
         audio_file = open(f"temp/{file_name}.mp3", "rb")
         audio_bytes = audio_file.read()
         st.audio(audio_bytes, format="audio/mp3")
 
-        if display_output_text:
-            st.markdown("#### Texto traducido:")
-            st.info(output_text)
+        st.markdown("#### Texto traducido:")
+        st.success(output_text)
 
     # Limpieza de audios viejos
     def remove_files(n):
